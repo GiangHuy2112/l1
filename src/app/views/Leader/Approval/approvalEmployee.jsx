@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import EmployeeDialogSubmit from "./approvalEmployeeDialogSubmit";
 import { deleteEmployee, getEmployees } from "./approvalEmployeeService";
 import "react-toastify/dist/ReactToastify.css";
-import { STATUS_CODE } from "app/constants";
+import  { STATUS_CODE_SUCCESS }  from "app/constants/statusContant";
 
 function ReleaseEmployee({t, i18n }) {
   const [listEmployee, setListEmployee] = useState([]);
@@ -38,7 +38,7 @@ function ReleaseEmployee({t, i18n }) {
   const handleDeleteEmployee = async () => {
     try {
       const res = await deleteEmployee(idEmployee)    
-      if(res?.data && res?.data?.code === STATUS_CODE.SUCCESS) {
+      if(res?.data && res?.data?.code === STATUS_CODE_SUCCESS) {
         getAllEmployee();
         toast.success("Xóa nhân viên thành công!");    
         setShowDialogDelete(false);

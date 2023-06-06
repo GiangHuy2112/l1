@@ -18,10 +18,10 @@ import {
   getProvinces,
   getDistrictsByProvinceId,
   getWardsByDistrictId,
-} from "./addEmployeeService";
+} from "./releaseEmployeeService";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { STATUS_CODE_SUCCESS} from "../../../constants/statusContant"
+import { STATUS_CODE } from "../../../constants/dataEmployee"
 import { makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles({
@@ -51,11 +51,68 @@ export default function EmployeeDialogSubmit(props) {
   const classes = useStyles();
   const { showDialogSubmit, handleCloseDialog, rowData, setRowData, getAllEmployee } = props;
 
+  const [listProvince, setListProvince] = useState([]);
+  const [listDistrict, setListDistrict] = useState([]);
+  const [listWards, setListWards] = useState([]);
+
+  useEffect( () => {
+    try {
+      const fetchData = async () => {
+        const res = await getProvinces()  
+        if(res?.data?.data) {
+          setListProvince(res.data.data)
+        }          
+      }
+      fetchData();
+    } catch (error) {
+      toast.error("Có lỗi!!!");
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      const fetchData = async () => {
+        if (rowData.provinceId){
+          const res = await getDistrictsByProvinceId(rowData.provinceId)
+          if(res?.data?.data) {
+            setListDistrict(res.data.data);
+          }
+        }
+        if(rowData.districtId) {
+          const res = await getWardsByDistrictId(rowData.districtId)
+          if(res?.data?.data) {
+            setListWards(res.data.data)
+          }
+        }     
+      }
+      fetchData();
+    } catch (error) {
+      toast.error("Có lỗi!!!")
+    }
+  }, [rowData.provinceId, rowData.districtId]);
 
   const handleChangeInput = (e) => {
     setRowData({ ...rowData, [e.target.name]: e.target.value });
   };
 
+  const handleChangeAddress = (name, id) => {
+    switch (name) {
+      case "provinceId":
+        setRowData({
+          ...rowData,
+          provinceId: id,
+          districtId: "",
+          wardsId: "",
+        });
+        setListWards([]);
+        break;
+      case "districtId":
+        setRowData({ ...rowData, districtId: id, wardsId: "" });
+        break;
+      default:
+        break;
+    }
+  };
 
   const submitEmployeeSuccessed = (message) => {
     getAllEmployee();
@@ -220,6 +277,112 @@ export default function EmployeeDialogSubmit(props) {
                 ]}
                 onChange={handleChangeInput}
               />
+            </Grid>
+
+            <Grid item lg={6} md={6} sm={12} xs={12}>
+              <FormControl
+                fullWidth
+                variant="standard"
+                sx={{ m: 1, minWidth: 120 }}
+              >
+                <SelectValidator
+                  className="w-100"
+                  variant="outlined"
+                  size="small"
+                  label={
+                    <span className="font">
+                      <span style={{ color: "red" }}> * </span>
+                      Tỉnh
+                    </span>
+                  }
+                  value={rowData.provinceId || ""}
+                  name="provinceId"
+                  validators={["required"]}
+                  errorMessages={["Trường này không được bỏ trống"]}
+                  onChange={(e) =>
+                    handleChangeAddress("provinceId", e.target.value)
+                  }
+                >
+                  {listProvince &&
+                    listProvince.map((item) => {
+                      return (
+                        <MenuItem key={item.id} value={item.id}>
+                          {item.name}
+                        </MenuItem>
+                      );
+                    })}
+                </SelectValidator>
+              </FormControl>
+            </Grid>
+
+            <Grid item lg={6} md={6} sm={12} xs={12}>
+              <FormControl
+                fullWidth
+                variant="standard"
+                sx={{ m: 1, minWidth: 120 }}
+              >
+                <SelectValidator
+                  className="w-100"
+                  variant="outlined"
+                  size="small"
+                  label={
+                    <span className="font">
+                      <span style={{ color: "red" }}> * </span>
+                      Huyện
+                    </span>
+                  }
+                  value={rowData.districtId || ""}
+                  name="districtId"
+                  validators={["required"]}
+                  errorMessages={["Trường này không được bỏ trống"]}
+                  onChange={(e) =>
+                    handleChangeAddress("districtId", e.target.value)
+                  }
+                >
+                  {listDistrict &&
+                    listDistrict.map((item) => {
+                      return (
+                        <MenuItem key={item.id} value={item.id}>
+                          {item.name}
+                        </MenuItem>
+                      );
+                    })}
+                </SelectValidator>
+              </FormControl>
+            </Grid>
+
+            <Grid item lg={6} md={6} sm={12} xs={12}>
+              <FormControl
+                fullWidth
+                variant="standard"
+                sx={{ m: 1, minWidth: 120 }}
+              >
+                <SelectValidator
+                  className="w-100"
+                  variant="outlined"
+                  size="small"
+                  label={
+                    <span className="font">
+                      <span style={{ color: "red" }}> * </span>
+                      Xã
+                    </span>
+                  }
+                  value={rowData.wardsId || ""}
+                  name="wardsId"
+                  onChange={handleChangeInput}
+                  validators={["required"]}
+                  errorMessages={["Trường này không được bỏ trống"]}
+                >
+                  {listWards &&
+                    listWards.map((item) => {
+                      return (
+                        <MenuItem key={item.id} value={item.id}>
+                          {item.name}
+                        </MenuItem>
+                      );
+                    })}
+                </SelectValidator>
+              </FormControl>
             </Grid>
           </Grid>
         </DialogContent>

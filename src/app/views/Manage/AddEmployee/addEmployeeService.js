@@ -1,37 +1,21 @@
 import axios from "axios";
 import ConstantList from "../../../appConfig";
 
-const API_PATH = ConstantList.API_ENPOINT + "/api";
+// const API_PATH_L3 = "https://em-dev.oceantech.com.vn/em/employees";
+const API_PATH = ConstantList.API_ENPOINT + "/employees";
 
-export const searchByPage = (searchObject) => {
-  return axios.post(API_PATH + "/search", searchObject);
+export const getEmployeesByStatus = (page, size) => {
+  return axios.get(API_PATH + `?statuses=1,3,4,6&page=${page}&size=${size}`);
 };
 
-export const getEmployees = () => {
-  return axios.get(API_PATH + "/employees/all");
+export const addEmployee = (employee) => {
+  return axios.post(API_PATH + "/employees");
+};
+
+export const editEmployee = (employee) => {
+  return axios.put(API_PATH + `/employees/${employee.id}`, employee);
 };
 
 export const deleteEmployee = (id) => {
   return axios.delete(API_PATH + "/employees/" + id);
-};
-
-export const addEmployee = (item) => {
-  return axios.post(API_PATH + "/employees", item);
-};
-export const editEmployee = (item) => {
-  return axios.put(API_PATH + "/employees/" + item.id, item);
-};
-
-// Address
-
-export const getProvinces = () => {
-  return axios.get(API_PATH + "/provinces/all");
-};
-
-export const getDistrictsByProvinceId = (id) => {
-  return axios.get(API_PATH + "/provinces/" + id + "/districts");
-};
-
-export const getWardsByDistrictId = (id) => {
-  return axios.get(API_PATH + "/districts/" + id + "/wards");
 };

@@ -4,10 +4,10 @@ import { Box, Button, Grid, Icon, IconButton } from "@material-ui/core";
 import { Breadcrumb, ConfirmationDialog } from "egret";
 import { toast } from "react-toastify";
 import EmployeeDialogSubmit from "./addEmployeeDialogSubmit";
-import { deleteEmployee, getEmployees } from "./addEmployeeService";
+import { deleteEmployee, getEmployeesByStatus } from "./addEmployeeService";
 import "react-toastify/dist/ReactToastify.css";
-import { STATUS_CODE } from "app/constants";
-
+import { STATUS_CODE_SUCCESS } from "app/constants/statusContant";
+import dataEmployee from "app/constants/dataEmployeeContant";
 function AddEmployee({t, i18n }) {
   const [listEmployee, setListEmployee] = useState([]);
   const [showDialogSubmit, setShowDialogSubmit] = useState(false);
@@ -17,7 +17,7 @@ function AddEmployee({t, i18n }) {
 
   const getAllEmployee = async () => {
     try {
-      const res = await getEmployees()
+      const res = await getEmployeesByStatus(1, 10)
       if(res?.data?.data) {
         setListEmployee(res.data.data);
       }
@@ -25,6 +25,7 @@ function AddEmployee({t, i18n }) {
       toast.error("Có lỗi!!!")
     }
   };
+
 
   useEffect(() => {
     getAllEmployee();
@@ -38,7 +39,7 @@ function AddEmployee({t, i18n }) {
   const handleDeleteEmployee = async () => {
     try {
       const res = await deleteEmployee(idEmployee)    
-      if(res?.data && res?.data?.code === STATUS_CODE.SUCCESS) {
+      if(res?.data && res?.data?.code === STATUS_CODE_SUCCESS) {
         getAllEmployee();
         toast.success("Xóa nhân viên thành công!");    
         setShowDialogDelete(false);
@@ -87,12 +88,13 @@ function AddEmployee({t, i18n }) {
         );
       },
     },
-    { title: t("employee.name"), field: "name" },
-    { title: t("employee.age"), field: "age" },
-    { title: t("employee.email"), field: "email" },
-    { title: t("employee.phone"), field: "phone" },
+    { title: t("Mã nhân viên"), field: "code" },
+    { title: t("Họ và tên"), field: "fullName" },
+    { title: t("Email"), field: "email" },
+    { title: t("Số điện thoại"), field: "phone" },
+    { title: t("Trạng thái"), field: "status", render:(rowData) =>dataEmployee.status.find(status=>rowData.status===status.id)?.name }
   ];
-
+console.log(listEmployee);
   return (
     <div className="m-sm-30">
       <Box mb={2}>

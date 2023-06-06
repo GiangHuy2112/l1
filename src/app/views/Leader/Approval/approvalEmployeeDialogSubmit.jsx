@@ -21,7 +21,7 @@ import {
 } from "./approvalEmployeeService";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { STATUS_CODE } from "../../../constants"
+import { STATUS_CODE_SUCCESS} from "../../../constants/statusContant"
 import { makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles({
@@ -125,7 +125,7 @@ export default function EmployeeDialogSubmit(props) {
     try {
       if (rowData?.id) {
           const res = await editEmployee(rowData)
-          if (res?.data && res?.data.code === STATUS_CODE.SUCCESS) {
+          if (res?.data && res?.data.code === STATUS_CODE_SUCCESS) {
             submitEmployeeSuccessed("Sửa nhân viên thành công")
           } else {
             toast.warning(res.data.message);
@@ -133,7 +133,7 @@ export default function EmployeeDialogSubmit(props) {
         } 
       else {
           const res = await addEmployee(rowData)
-          if (res?.data && res?.data?.code === STATUS_CODE.SUCCESS) {
+          if (res?.data && res?.data?.code === STATUS_CODE_SUCCESS) {
             submitEmployeeSuccessed("Thêm nhân viên thành công")
           } else {
             toast.warning(res.data.message);
