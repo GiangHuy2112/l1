@@ -18,18 +18,11 @@ import {
   getProvinces,
   getDistrictsByProvinceId,
   getWardsByDistrictId,
-} from "./EmployeeService";
+} from "./addEmployeeService";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { STATUS_CODE } from "../../constants"
+import { STATUS_CODE } from "../../../constants"
 import { makeStyles } from '@material-ui/core/styles';
-
-toast.configure({
-  autoClose: 2000,
-  draggable: false,
-  limit: 3,
-});
-
 
 const useStyles = makeStyles({
   dialogTitle: {
@@ -61,27 +54,6 @@ export default function EmployeeDialogSubmit(props) {
   const [listProvince, setListProvince] = useState([]);
   const [listDistrict, setListDistrict] = useState([]);
   const [listWards, setListWards] = useState([]);
-
-  useEffect(() => {
-    ValidatorForm.addValidationRule("isPhoneNumberValid", (value) => {
-      const pattern = /^\d{11}$/;
-      return pattern.test(value);
-    });
-    ValidatorForm.addValidationRule("isNameValid", (value) => {
-      const pattern = /^[^\d\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?\u00A0]+(\s[^\d\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?\u00A0]+)*$/;
-      return pattern.test(value);
-    });
-    ValidatorForm.addValidationRule("isCodeValid", (value) => {
-      const pattern = /^(?!.*\s)[a-zA-Z0-9]{6,10}$/;
-      return pattern.test(value);
-    })
-
-    return () => {
-      ValidatorForm.removeValidationRule("isPhoneNumberValid")
-      ValidatorForm.removeValidationRule("isNameValid")
-      ValidatorForm.removeValidationRule("isCodeValid")
-    }
-  }, [])
 
   useEffect( () => {
     try {

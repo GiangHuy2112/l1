@@ -3,18 +3,12 @@ import MaterialTable from "material-table";
 import { Box, Button, Grid, Icon, IconButton } from "@material-ui/core";
 import { Breadcrumb, ConfirmationDialog } from "egret";
 import { toast } from "react-toastify";
-import EmployeeDialogSubmit from "./EmployeeDialogSubmit";
-import { deleteEmployee, getEmployees } from "./EmployeeService";
+import EmployeeDialogSubmit from "./releaseEmployeeDialogSubmit";
+import { deleteEmployee, getEmployees } from "./releaseEmployeeService";
 import "react-toastify/dist/ReactToastify.css";
 import { STATUS_CODE } from "app/constants";
 
-toast.configure({
-  autoClose: 2000,
-  draggable: false,
-  limit: 3,
-});
-
-function Employee({t, i18n }) {
+function ReleaseEmployee({t, i18n }) {
   const [listEmployee, setListEmployee] = useState([]);
   const [showDialogSubmit, setShowDialogSubmit] = useState(false);
   const [showDialogDelete, setShowDialogDelete] = useState(false);
@@ -104,8 +98,8 @@ function Employee({t, i18n }) {
       <Box mb={2}>
         <Breadcrumb
           routeSegments={[
-            { name: t("Dashboard.manage"), path: "/" },
-            { name: t('employee.title')  },
+            { name: t("Dashboard.manage") },
+            { name: t('Thêm mới nhân viên')  },
           ]}
         />
       </Box>
@@ -126,10 +120,27 @@ function Employee({t, i18n }) {
             title={false}
             data={listEmployee}
             columns={columns}
+            localization={
+              {
+                toolbar: {
+                  searchPlaceholder: 'Tìm kiếm',
+                },
+                pagination: {
+                  labelDisplayedRows: "{from}-{to} của {count}",
+                  labelRowsPerPage: "Số bản ghi mỗi trang:",
+                  firstTooltip: "Trang đầu",
+                  previousTooltip: "Trang trước",
+                  nextTooltip: "Trang tiếp",
+                  lastTooltip: "Trang cuối",
+                  labelRowsSelect: "bản ghi/trang",
+                },
+              }
+            }
             options={{
               exportButton: true,
               exportAllData: true,
               pageSize: 8,
+              pageSizeOptions: [5, 8, 10, 20],
               headerStyle: {
                 backgroundColor: "#358600",
                 color: "#FFF",
@@ -164,4 +175,4 @@ function Employee({t, i18n }) {
   );
 }
 
-export default Employee;
+export default ReleaseEmployee;

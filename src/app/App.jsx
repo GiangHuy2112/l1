@@ -18,6 +18,9 @@ import AuthGuard from "./auth/AuthGuard";
 import axios from "axios";
 import { toast } from "react-toastify";
 import ConstantList from "../app/appConfig";
+import { useEffect } from "react";
+import { customValidateForm, handleChangePage, handleChangeRowPerPage, removeCustomValidateForm } from "utils";
+import { ValidatorForm } from "react-material-ui-form-validator";
 
 
 // import UserService from "./services/UserService";
@@ -25,6 +28,7 @@ import ConstantList from "../app/appConfig";
 
 loadProgressBar();
 toast.configure();
+
 
 // axios.interceptors.response.use(
 //   res => {
@@ -49,7 +53,17 @@ toast.configure();
 //   }
 // );
 
+
+
+
 const App = () => {
+  useEffect(() => {
+    customValidateForm(ValidatorForm)
+  
+    return () => {
+      removeCustomValidateForm(ValidatorForm)
+    }
+  }, [])
   return (
     <AppContext.Provider value={{ routes }}>
       <Provider store={Store}>

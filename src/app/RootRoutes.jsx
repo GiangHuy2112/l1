@@ -5,7 +5,7 @@ import sessionRoutes from "./views/sessions/SessionRoutes";
 import dashboardRoutes from "./views/dashboard/DashboardRoutes";
 import administrativeUnitRoutes from "./views/AdministrativeUnit/AdministrativeUnitRoutes"; 
 import UserRoutes from "./views/User/UserRoutes";
-import EmployeeRoutes from "./views/employee/EmployeeRoutes";
+import addEmployeeRoutes from "./views/Manage/AddEmployee/addEmployeeRoutes";
 import departmentRoutes from "./views/Department/DepartmentRoutes"; 
 import ConstantList from "./appConfig";
 // import MenuRoutes from "./views/Menus/MenuRoutes";
@@ -15,6 +15,10 @@ import ShiftWorkRouters from "./views/ShiftWork/ShiftWorkRouters";
 import TimeSheetRoutes from "./views/TimeSheet/TimeSheetRoutes"; 
 import ColorRoutes from "./views/Color/ColorRoutes"  
 import CategoryRoutes from "./views/Category/CategoryRoutes" 
+import manageEmployeeRoutes from "./views/Manage/ManageEmployee/manageEmployeeRoutes";
+import releaseEmployeeRoutes from "./views/Manage/Release/releaseEmployeeRoutes";
+import approvalEmployeeRoutes from "./views/Leader/Approval/approvalEmployeeRoutes";
+import approvedEmployeeRoutes from "./views/Leader/Approved/approvedEmployeeRoutes";
 
 const redirectRoute = [
   {
@@ -40,11 +44,15 @@ const routes = [
   ...pageLayoutRoutes,  
   ...MenuRoutes,
   ...UserRoutes,
-  ...EmployeeRoutes,
+  ...addEmployeeRoutes,
+  ...manageEmployeeRoutes,
+  ...releaseEmployeeRoutes,
+  ...approvalEmployeeRoutes,
+  ...approvedEmployeeRoutes,
   ...ShiftWorkRouters, 
   ...ColorRoutes, 
   ...CategoryRoutes,
-  ...errorRoute
+  ...errorRoute,
 
 ];
 

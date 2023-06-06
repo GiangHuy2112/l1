@@ -2,11 +2,11 @@ import moment from "moment";
 
 export function debounce(func, wait, immediate) {
   var timeout;
-  return function() {
+  return function () {
     var context = this,
       args = arguments;
     clearTimeout(timeout);
-    timeout = setTimeout(function() {
+    timeout = setTimeout(function () {
       timeout = null;
       if (!immediate) func.apply(context, args);
     }, wait);
@@ -72,7 +72,7 @@ export function scrollTo(scrollableElement, elmID) {
   if (stopY > startY) {
     for (var i = startY; i < stopY; i += step) {
       setTimeout(
-        (function(leapY) {
+        (function (leapY) {
           return () => {
             scrollableElement.scrollTo(0, leapY);
           };
@@ -87,7 +87,7 @@ export function scrollTo(scrollableElement, elmID) {
   }
   for (let i = startY; i > stopY; i -= step) {
     setTimeout(
-      (function(leapY) {
+      (function (leapY) {
         return () => {
           scrollableElement.scrollTo(0, leapY);
         };
@@ -129,7 +129,7 @@ export function getQueryParam(prop) {
     window.location.href.slice(window.location.href.indexOf("?") + 1)
   );
   var definitions = search.split("&");
-  definitions.forEach(function(val, key) {
+  definitions.forEach(function (val, key) {
     var parts = val.split("=", 2);
     params[parts[0]] = parts[1];
   });
@@ -138,7 +138,55 @@ export function getQueryParam(prop) {
 
 export function classList(classes) {
   return Object.entries(classes)
-    .filter(entry => entry[1])
-    .map(entry => entry[0])
+    .filter((entry) => entry[1])
+    .map((entry) => entry[0])
     .join(" ");
 }
+
+export const customValidateForm = (ValidatorForm) => {
+  ValidatorForm.addValidationRule("isPhoneNumberValid", (value) => {
+    const pattern = /^\d{11}$/;
+    return pattern.test(value);
+  });
+  ValidatorForm.addValidationRule("isNameValid", (value) => {
+    const pattern =
+      /^[^\d\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?\u00A0]+(\s[^\d\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?\u00A0]+)*$/;
+    return pattern.test(value);
+  });
+  ValidatorForm.addValidationRule("isCodeValid", (value) => {
+    const pattern = /^(?!.*\s)[a-zA-Z0-9]{6,10}$/;
+    return pattern.test(value);
+  });
+};
+
+export const removeCustomValidateForm = (ValidatorForm) => {
+  ValidatorForm.removeValidationRule("isPhoneNumberValid");
+  ValidatorForm.removeValidationRule("isNameValid");
+  ValidatorForm.removeValidationRule("isCodeValid");
+};
+
+// export const useStyles = makeStyles({
+//   dialogTitle: {
+//     paddingTop: 8,
+//     paddingBottom: 5,
+//     borderBottom: "1px solid #eee",
+//   },
+//   titleDialog: {
+//     fontSize: "22px",
+//     fontWeight: "500",
+//     color: "#409b3e",
+//   },
+//   dialogContent: {
+//     overflowY: "unset !important",
+//     paddingTop: "20px !important",
+//     paddingBottom: "20px !important",
+//     borderBottom: "1px solid #eee",
+//   },
+//   validatorForm: {
+//     maxWidth: "550px",
+//   },
+//   iconClose: {
+//     position: "absolute",
+//     right: "10px",
+//   },
+// });
