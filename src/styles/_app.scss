@@ -9,3 +9,19 @@
 @import "./layouts/index";
 @import "./views/index";
 @import "custom.scss";
+.MuiTableSortLabel-root:hover {
+    color: #ccc !important;
+}
+.MuiFormLabel-root.MuiInputLabel-root.MuiInputLabel-formControl.MuiInputLabel-animated.MuiInputLabel-outlined {
+    font-size: 17px !important;
+}
+input.MuiInputBase-input.MuiOutlinedInput-input {
+    font-size: 17px !important;
+}
+
+.MuiTableCell-root.MuiTableCell-head.MuiTableCell-alignLeft:nth-child(1) {
+    width: 0px !important;
+}
+.MuiTableCell-root.MuiTableCell-body.MuiTableCell-alignLeft {
+    width: 0 !important; 
+}

@@ -273,7 +273,7 @@ export default function EmployeeDialogSubmit(props) {
                 validators={["required", "isPhoneNumberValid"]}
                 errorMessages={[
                   "Trường này không được để trống",
-                  "Số điện thoại có độ dài 11 chữ số",
+                  "Số điện thoại bắt đầu bằng 0 và có độ dài 10 chữ số.",
                 ]}
                 onChange={handleChangeInput}
               />

@@ -38,7 +38,7 @@
     "material-ui": "^1.0.0-beta.47",
     "material-ui-dropzone": "^3.5.0",
     "mdbreact": "^4.12.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "node-sass": "^4.12.0",
     "notistack": "^0.8.8",
     "print-js": "^1.0.63",

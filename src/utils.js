@@ -145,48 +145,79 @@ export function classList(classes) {
 
 export const customValidateForm = (ValidatorForm) => {
   ValidatorForm.addValidationRule("isPhoneNumberValid", (value) => {
-    const pattern = /^\d{11}$/;
+    if (value === "") {
+      return true;
+    }
+    const pattern = /^0\d{9}$/;
     return pattern.test(value);
   });
+
+  ValidatorForm.addValidationRule("isCitizenIdNumberValid", (value) => {
+    if (value === "") {
+      return true;
+    }
+    const pattern = /^\d{12}$/;
+    return pattern.test(value);
+  });
+
   ValidatorForm.addValidationRule("isNameValid", (value) => {
+    if (value === "") {
+      return true;
+    }
     const pattern =
       /^[^\d\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?\u00A0]+(\s[^\d\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?\u00A0]+)*$/;
     return pattern.test(value);
   });
+
   ValidatorForm.addValidationRule("isCodeValid", (value) => {
+    if (value === "") {
+      return true;
+    }
     const pattern = /^(?!.*\s)[a-zA-Z0-9]{6,10}$/;
     return pattern.test(value);
+  });
+
+  ValidatorForm.addValidationRule("isDateOfBirthValid", (value) => {
+    if (value === "") {
+      return true;
+    }
+    const dateOfBirth = moment(value, "YYYY-MM-DD");
+    const minDate = moment().subtract(60, "years");
+    const maxDate = moment().subtract(18, "years");
+
+    if (
+      dateOfBirth.isSameOrBefore(maxDate, "day") &&
+      dateOfBirth.isSameOrAfter(minDate, "day")
+    ) {
+      return true;
+    } else {
+      return false;
+    }
   });
 };
 
 export const removeCustomValidateForm = (ValidatorForm) => {
   ValidatorForm.removeValidationRule("isPhoneNumberValid");
+  ValidatorForm.removeValidationRule("isCitizenIdNumberValid");
   ValidatorForm.removeValidationRule("isNameValid");
   ValidatorForm.removeValidationRule("isCodeValid");
+  ValidatorForm.removeValidationRule("isDateOfBirthValid");
 };
 
-// export const useStyles = makeStyles({
-//   dialogTitle: {
-//     paddingTop: 8,
-//     paddingBottom: 5,
-//     borderBottom: "1px solid #eee",
-//   },
-//   titleDialog: {
-//     fontSize: "22px",
-//     fontWeight: "500",
-//     color: "#409b3e",
-//   },
-//   dialogContent: {
-//     overflowY: "unset !important",
-//     paddingTop: "20px !important",
-//     paddingBottom: "20px !important",
-//     borderBottom: "1px solid #eee",
-//   },
-//   validatorForm: {
-//     maxWidth: "550px",
-//   },
-//   iconClose: {
-//     position: "absolute",
-//     right: "10px",
-//   },
-// });
+export function isBase64Image(str) {
+  // Biểu thức chính quy kiểm tra chuỗi Base64
+  const base64Regex =
+    /^data:image\/(png|jpeg|jpg|gif|svg\+xml);base64,([^\s]+)$/;
+
+  return base64Regex.test(str);
+}
+
+export function countObjectKeys(obj, excludedKeys) {
+  let count = 0;
+  for (let key in obj) {
+    if (!excludedKeys.includes(key) && obj[key] !== "") {
+      count++;
+    }
+  }
+  return count;
+}

@@ -4,21 +4,28 @@ import { Box, Button, Grid, Icon, IconButton } from "@material-ui/core";
 import { Breadcrumb, ConfirmationDialog } from "egret";
 import { toast } from "react-toastify";
 import EmployeeDialogSubmit from "./addEmployeeDialogSubmit";
-import { deleteEmployee, getEmployeesByStatus } from "./addEmployeeService";
+import { deleteEmployee, getListEmployee } from "./addEmployeeService";
 import "react-toastify/dist/ReactToastify.css";
 import { STATUS_CODE_SUCCESS } from "app/constants/statusContant";
 import dataEmployee from "app/constants/dataEmployeeContant";
+import TablePaginationComp from '../../Component/TablePagination/TablePagination';
+import TableComp from "app/views/Component/TableComp/TableComp";
+
 function AddEmployee({t, i18n }) {
   const [listEmployee, setListEmployee] = useState([]);
   const [showDialogSubmit, setShowDialogSubmit] = useState(false);
   const [showDialogDelete, setShowDialogDelete] = useState(false);
   const [idEmployee, setIdEmployee] = useState();
   const [rowData, setRowData] = useState({});
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
 
   const getAllEmployee = async () => {
     try {
-      const res = await getEmployeesByStatus(1, 10)
+      const res = await getListEmployee(page+1, 10, "")
       if(res?.data?.data) {
+        setTotalItems(res.data.totalElements)
         setListEmployee(res.data.data);
       }
     } catch (error) {
@@ -29,7 +36,8 @@ function AddEmployee({t, i18n }) {
 
   useEffect(() => {
     getAllEmployee();
-  }, []);
+  }, [page]);
+
 
   const handleOpenDialogDelete = (id) => {
     setIdEmployee(id);
@@ -63,38 +71,66 @@ function AddEmployee({t, i18n }) {
   };
 
   const columns = [
+    { 
+      title: "STT",
+      render: (rowData) => rowData?.tableData?.id + 1,
+    },
     {
       title: "Thao tác",
       field: "action",
       render: (rowData) => {
         return (
           <div className="none_wrap">
-            <IconButton
-              size="small"
-              onClick={() => handleEditEmployee(rowData)}
-            >
-              <Icon color="primary">edit</Icon>
-            </IconButton>
+            {(+rowData?.submitProfileStatus === 2 || +rowData?.submitProfileStatus === 3 || +rowData?.submitProfileStatus === 5 || +rowData?.submitProfileStatus === 6 ) &&
+              <IconButton
+                size="small"
+                onClick={() => handleEditEmployee(rowData)}
+              >
+                <Icon color="primary">visibility</Icon>
+              </IconButton>
+            }
+            {(+rowData?.submitProfileStatus === 1 || +rowData?.submitProfileStatus === 4 || +rowData?.submitProfileStatus === 5) &&
+              <IconButton
+                size="small"
+                onClick={() => handleEditEmployee(rowData)}
+              >
+                <Icon color="primary">edit</Icon>
+              </IconButton>
+            }
 
-            <IconButton
-              size="small"
-              onClick={() => handleOpenDialogDelete(rowData.id)}
-            >
-              <Icon style={{ color: "red", margin: "0px 0px 0px 10px" }}>
-                delete
-              </Icon>
-            </IconButton>
+            {+rowData?.submitProfileStatus === 1 && 
+              <IconButton
+                size="small"
+                onClick={() => handleOpenDialogDelete(rowData.id)}
+              >
+                <Icon style={{ color: "red", margin: "0px 0px 0px 10px" }}>
+                  delete
+                </Icon>
+              </IconButton>
+            }
+            
           </div>
         );
       },
     },
-    { title: t("Mã nhân viên"), field: "code" },
-    { title: t("Họ và tên"), field: "fullName" },
-    { title: t("Email"), field: "email" },
+    { title: t("Mã nhân viên"), field: "code"},
+    { title: t("Họ và tên"), field: "name" },
+    { title: t("Địa chỉ"), field: "address" },
     { title: t("Số điện thoại"), field: "phone" },
-    { title: t("Trạng thái"), field: "status", render:(rowData) =>dataEmployee.status.find(status=>rowData.status===status.id)?.name }
+    { title: t("Trạng thái"), field: "submitProfileStatus", render:(rowData) =>dataEmployee.status.find(status=>+rowData.submitProfileStatus===status.id)?.name }
   ];
-console.log(listEmployee);
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  
+
   return (
     <div className="m-sm-30">
       <Box mb={2}>
@@ -118,36 +154,14 @@ console.log(listEmployee);
               Thêm nhân viên
             </Button>
           </Box>
-          <MaterialTable
-            title={false}
-            data={listEmployee}
-            columns={columns}
-            localization={
-              {
-                toolbar: {
-                  searchPlaceholder: 'Tìm kiếm',
-                },
-                pagination: {
-                  labelDisplayedRows: "{from}-{to} của {count}",
-                  labelRowsPerPage: "Số bản ghi mỗi trang:",
-                  firstTooltip: "Trang đầu",
-                  previousTooltip: "Trang trước",
-                  nextTooltip: "Trang tiếp",
-                  lastTooltip: "Trang cuối",
-                  labelRowsSelect: "bản ghi/trang",
-                },
-              }
-            }
-            options={{
-              exportButton: true,
-              exportAllData: true,
-              pageSize: 8,
-              pageSizeOptions: [5, 8, 10, 20],
-              headerStyle: {
-                backgroundColor: "#358600",
-                color: "#FFF",
-              },
-            }}
+
+          <TableComp 
+            listData={listEmployee} 
+            columns={columns} page={page} 
+            handleChangePage={handleChangePage} 
+            totalItems={totalItems} 
+            rowsPerPage={rowsPerPage} 
+            handleChangeRowsPerPage={handleChangeRowsPerPage} 
           />
 
           {showDialogSubmit && (
