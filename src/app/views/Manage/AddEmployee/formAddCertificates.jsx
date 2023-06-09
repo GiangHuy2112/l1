@@ -12,9 +12,10 @@ import moment from "moment";
 import TableComp from "app/views/Component/TableComp/TableComp";
 import { useState } from "react";
 import { useEffect } from "react";
-import { getCertificatesByEmployee } from "./addEmployeeService";
+import { addCertificateEmployee, deleteCertificateEmployee, editCertificateEmployee, getCertificatesByEmployee } from "./addEmployeeService";
 import { toast } from "react-toastify";
 import { ConfirmationDialog } from "egret";
+import { STATUS_CODE_SUCCESS } from "app/constants/statusContant";
 
 const useStyles = makeStyles({
   btnCustom: {
@@ -28,7 +29,7 @@ const useStyles = makeStyles({
     padding: "20px"
   },
   tableContainer: {
-    maxHeheheight: "390px",
+    maxHeight: "390px",
     overflow: "auto"
   }
 });
@@ -84,10 +85,36 @@ export default function FormAddCertificates({rowData, setRowData}) {
       setRowDataCertificate({ ...rowDataCertificate, [e.target.name]: e.target.value });
     };
 
-    const handleSave = (e) => {
+
+
+    const handleSave = async (e) => {
       e.preventDefault()
       if(rowData.id) {
-
+        try {
+          if(rowDataCertificate.id) {
+            const res = await editCertificateEmployee(rowDataCertificate)
+            if (res?.data && res?.data.code === STATUS_CODE_SUCCESS) {
+              toast.success("Sửa văn bằng thành công")
+              getListCertificateEmployee()
+            } else {
+              toast.warning(res?.data?.message);
+            }       
+          }
+        // Add
+          else {
+            const res = await addCertificateEmployee(rowData.id, [rowDataCertificate])
+            if (res?.data && res?.data.code === STATUS_CODE_SUCCESS) {
+              toast.success("Thêm văn bằng thành công")
+              getListCertificateEmployee()
+            } else {
+              toast.warning(res?.data?.message);
+            }   
+            
+          }
+        } catch (error) {
+          toast.warning("Có lỗi");
+        }
+        
       }
       else {
         // Edit
@@ -130,9 +157,21 @@ export default function FormAddCertificates({rowData, setRowData}) {
       setIdCertificate(idCert)
     }
 
-    const handleDeleteCertificate = () => {
+    const handleDeleteCertificate = async () => {
      if(rowData.id) {
-
+      try {
+        const res = await deleteCertificateEmployee(idCertificate)    
+        if(res?.data && res?.data?.code === STATUS_CODE_SUCCESS) {
+          getListCertificateEmployee();
+          toast.success("Xóa văn bằng thành công!");    
+          setShowDialogDelete(false);
+        }
+        else {
+          toast.error(res?.data?.message);   
+        }
+      } catch (error) {     
+        toast.error("Có lỗi!!!");
+      }
      }
      else {
       const listCertEmployee = listCertificateEmployee.filter(item => {
@@ -140,7 +179,6 @@ export default function FormAddCertificates({rowData, setRowData}) {
       })
       setListCertificateEmployee(listCertEmployee)
     }
-    toast.success("Xóa văn bằng thành công")
      setShowDialogDelete(false);
     }
 
@@ -167,7 +205,7 @@ export default function FormAddCertificates({rowData, setRowData}) {
             
               <IconButton
                 size="small"
-                onClick={() => handleOpenDialogDelete(rowDataCertificate.idCert)}
+                onClick={() => handleOpenDialogDelete(rowDataCertificate.idCert ? rowDataCertificate.idCert : rowDataCertificate.id)}
               >
                 <Icon style={{ color: "red", margin: "0px 0px 0px 10px" }}>
                   delete
@@ -287,7 +325,7 @@ export default function FormAddCertificates({rowData, setRowData}) {
               color="secondary"
               
             >
-              {rowDataCertificate.idCert ? "SỬA" : "LƯU VĂN BẰNG"}
+              {rowDataCertificate.idCert || rowDataCertificate.id ? "SỬA" : "LƯU VĂN BẰNG"}
             </Button>
             
             <Button

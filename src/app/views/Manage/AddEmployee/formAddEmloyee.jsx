@@ -75,7 +75,7 @@ export default function FormAddEmployee({rowData, setRowData, handleChangeInput}
                 onChange={handleImageChange}
                 className={classes.hiddenInput}
             />
-            <label htmlFor="upload-image">
+            <label htmlFor="upload-image" >
                 <Typography
                     color="primary"
                     className={classes.uploadButton}

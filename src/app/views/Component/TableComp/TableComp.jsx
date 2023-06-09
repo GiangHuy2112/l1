@@ -4,7 +4,7 @@ import TablePaginationComp from '../TablePagination/TablePagination'
 import { makeStyles } from '@material-ui/core/styles';
 
 
-function TableComp({listData , columns, page, handleChangePage, totalItems, rowsPerPage, handleChangeRowsPerPage}) {
+function TableComp({listData , columns, page, handleChangePage, totalItems, rowsPerPage, handleChangeRowsPerPage, onlyTable=false}) {
 
   return (
     <>
@@ -29,6 +29,8 @@ function TableComp({listData , columns, page, handleChangePage, totalItems, rows
                   exportButton: true,
                   exportAllData: true,
                   paging: false,
+                  toolbar: !onlyTable,
+                  tableLayout: "fixed",
                   headerStyle: {
                     backgroundColor: "#358600",
                     color: "#FFF",
@@ -36,7 +38,8 @@ function TableComp({listData , columns, page, handleChangePage, totalItems, rows
                   },
                 }}
               />
-   
+
+          {!onlyTable &&
           <TablePaginationComp
             totalItems={totalItems} 
             rowsPerPage={rowsPerPage} 
@@ -44,6 +47,7 @@ function TableComp({listData , columns, page, handleChangePage, totalItems, rows
             handleChangePage={handleChangePage} 
             handleChangeRowsPerPage={handleChangeRowsPerPage} 
           />
+          }
     </>
   )
 }

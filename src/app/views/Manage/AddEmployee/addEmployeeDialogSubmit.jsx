@@ -100,7 +100,7 @@ export default function EmployeeDialogSubmit(props) {
           if (res?.data && res?.data.code === STATUS_CODE_SUCCESS) {
             submitEmployeeSuccessed("Sửa nhân viên thành công")
           } else {
-            toast.warning(res.data.message);
+            toast.warning(res?.data?.message);
           }
         } 
       else {
@@ -109,7 +109,7 @@ export default function EmployeeDialogSubmit(props) {
             submitEmployeeSuccessed("Thêm nhân viên thành công")
             setIsDisableRegisterBtn(false);
           } else {
-            toast.warning(res.data.message);
+            toast.warning(res?.data?.message);
           }   
         }
     } catch (error) {

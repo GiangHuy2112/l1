@@ -14,10 +14,11 @@ import moment from "moment";
 import TableComp from "app/views/Component/TableComp/TableComp";
 import { useState } from "react";
 import { useEffect } from "react";
-import { getFamilyByEmployee } from "./addEmployeeService";
+import { addFamilyByEmployee, deleteFamilyByEmployee, editFamilyByEmployee, getFamilyByEmployee } from "./addEmployeeService";
 import { toast } from "react-toastify";
 import { ConfirmationDialog } from "egret";
 import dataEmployee from "app/constants/dataEmployeeContant";
+import { STATUS_CODE_SUCCESS } from "app/constants/statusContant";
 
 const useStyles = makeStyles({
   btnCustom: {
@@ -87,10 +88,33 @@ export default function FormAddEmployeeFamily({rowData, setRowData}) {
       setRowDataFamily({ ...rowDataFamily, [e.target.name]: e.target.value });
     };
 
-    const handleSave = (e) => {
+    const handleSave = async (e) => {
       e.preventDefault()
       if(rowData.id) {
-        
+        try{
+          if(rowDataFamily.id) {
+              const res = await editFamilyByEmployee(rowDataFamily)
+              if (res?.data && res?.data.code === STATUS_CODE_SUCCESS) {
+                toast.success("Sửa quan hệ thành công")
+                getListFamilyEmployee()
+              } else {
+                toast.warning(res?.data?.message);
+              }       
+            }
+          // Add
+          else {
+            const res = await addFamilyByEmployee(rowData.id, [rowDataFamily])
+            if (res?.data && res?.data.code === STATUS_CODE_SUCCESS) {
+              toast.success("Thêm quan hệ thành công")
+              getListFamilyEmployee()
+            } else {
+              toast.warning(res?.data?.message);
+            }   
+            
+          }
+        } catch (error) {
+          toast.warning("Có lỗi");
+        }
       }
       else {
         // Edit
@@ -134,9 +158,21 @@ export default function FormAddEmployeeFamily({rowData, setRowData}) {
       setIdCertificate(id)
     }
 
-    const handleDeleteFamily = () => {
+    const handleDeleteFamily = async () => {
      if(rowData.id) {
-
+      try {
+        const res = await deleteFamilyByEmployee(idFamily)    
+        if(res?.data && res?.data?.code === STATUS_CODE_SUCCESS) {
+          getListFamilyEmployee();
+          toast.success("Xóa quan hệ thành công!");    
+          setShowDialogDelete(false);
+        }
+        else {
+          toast.error(res?.data?.message);   
+        }
+      } catch (error) {     
+        toast.error("Có lỗi!!!");
+      }
      }
      else {
       const listFamEmployee = listFamilyEmployee.filter(item => {
@@ -170,7 +206,7 @@ export default function FormAddEmployeeFamily({rowData, setRowData}) {
             
               <IconButton
                 size="small"
-                onClick={() => handleOpenDialogDelete(rowDataFamily.famId)}
+                onClick={() => handleOpenDialogDelete(rowDataFamily.famId ? rowDataFamily.famId : rowDataFamily.id)}
               >
                 <Icon style={{ color: "red", margin: "0px 0px 0px 10px" }}>
                   delete
@@ -185,7 +221,7 @@ export default function FormAddEmployeeFamily({rowData, setRowData}) {
     { title: ("Ngày sinh"), field: "dateOfBirth", render: (rowDataFamily) => moment(rowDataFamily.dateOfBirth).format('YYYY-MM-DD')  },
     { title: ("Địa chỉ"), field: "address" },
     { title: ("Quan hệ"), field: "relationShip", render:(rowDataFamily) =>dataEmployee.relationship.find(item=>rowDataFamily.relationShip===item.id)?.name },
-    { title: ("Số CCCD/CMT"), field: "citizenIdentificationNumber" },
+    { title: ("Số CCCD"), field: "citizenIdentificationNumber" },
   ];
   return (
     <div className={classes.formContainer}>
@@ -263,10 +299,9 @@ export default function FormAddEmployeeFamily({rowData, setRowData}) {
                 name="dateOfBirth"
                 size="small"
                 placeholder=""
-                validators={["required", "isDateOfBirthValid"]}
+                validators={["required"]}
                 errorMessages={[
                 "Trường này không được để trống",
-                "Tuổi phải nằm trong khoảng 18 - 60",
                 ]}
                 InputLabelProps={{
                 shrink: true,
@@ -408,7 +443,7 @@ export default function FormAddEmployeeFamily({rowData, setRowData}) {
               color="secondary"
               
             >
-              {rowDataFamily.famId ? "SỬA" : "LƯU QUAN HỆ"}
+              {rowDataFamily.famId || rowDataFamily.id ? "SỬA" : "LƯU QUAN HỆ"}
             </Button>
             
             <Button

@@ -15,7 +15,7 @@ class Brand extends Component {
         </div> */}
         <div className="flex flex-middle brand logo-menu">
           <Link to={ConstantList.HOME_PAGE}>
-            <span className="brand__text">Fashion Store</span>
+            <span className="brand__text">OceanTech</span>
           </Link>
         </div>
         {this.props.children}

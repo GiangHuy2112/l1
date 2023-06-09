@@ -15,7 +15,7 @@ export const addEmployee = (employee) => {
 };
 
 export const editEmployee = (employee) => {
-  return axios.put(API_PATH_EMPLOYEE + `/employees/${employee.id}`, employee);
+  return axios.put(API_PATH_EMPLOYEE + `/${employee.id}`, employee);
 };
 
 export const deleteEmployee = (id) => {
@@ -29,8 +29,19 @@ export const getCertificatesByEmployee = (employeeId) => {
   return axios.get(API_PATH_CERTIFICATE + `?employeeId=${employeeId}`);
 };
 
-export const addCertificateEmployee = (employeeId) => {
-  return axios.post(API_PATH_CERTIFICATE + `?employeeId=${employeeId}`);
+export const addCertificateEmployee = (employeeId, certificateArr) => {
+  return axios.post(
+    API_PATH_CERTIFICATE + `?employeeId=${employeeId}`,
+    certificateArr
+  );
+};
+
+export const editCertificateEmployee = (certificate) => {
+  return axios.put(API_PATH_CERTIFICATE + `/${certificate.id}`, certificate);
+};
+
+export const deleteCertificateEmployee = (certificateId) => {
+  return axios.delete(API_PATH_CERTIFICATE + `/${certificateId}`);
 };
 
 // Family
@@ -38,4 +49,16 @@ const API_PATH_FAMILY = ConstantList.API_ENPOINT + "/employee-family";
 
 export const getFamilyByEmployee = (employeeId) => {
   return axios.get(API_PATH_FAMILY + `?employeeId=${employeeId}`);
+};
+
+export const addFamilyByEmployee = (employeeId, familyArr) => {
+  return axios.post(API_PATH_FAMILY + `?employeeId=${employeeId}`, familyArr);
+};
+
+export const editFamilyByEmployee = (family) => {
+  return axios.put(API_PATH_FAMILY + `/${family.id}`, family);
+};
+
+export const deleteFamilyByEmployee = (familyId) => {
+  return axios.delete(API_PATH_FAMILY + `/${familyId}`);
 };

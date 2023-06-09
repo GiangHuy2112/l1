@@ -10,10 +10,12 @@ import { STATUS_CODE_SUCCESS } from "app/constants/statusContant";
 import dataEmployee from "app/constants/dataEmployeeContant";
 import TablePaginationComp from '../../Component/TablePagination/TablePagination';
 import TableComp from "app/views/Component/TableComp/TableComp";
+import EmployeeInforsDialog from "./employeeInformationDialog";
 
 function AddEmployee({t, i18n }) {
   const [listEmployee, setListEmployee] = useState([]);
   const [showDialogSubmit, setShowDialogSubmit] = useState(false);
+  const [showDialogViewInfor, setShowDialogViewInfor] = useState(false);
   const [showDialogDelete, setShowDialogDelete] = useState(false);
   const [idEmployee, setIdEmployee] = useState();
   const [rowData, setRowData] = useState({});
@@ -65,10 +67,20 @@ function AddEmployee({t, i18n }) {
     setShowDialogSubmit(true);
   };
 
-  const handleCloseDialog = () => {
+  const handleViewEmployee = (rowData) => {
+    setRowData(rowData);
+    setShowDialogViewInfor(true)
+  }
+
+  const handleCloseDialogSubmit = () => {
     setShowDialogSubmit(false);
     setRowData({});
   };
+
+  const handleCloseDialogViewInfor = () => {
+    setShowDialogViewInfor(false);
+    setRowData({});
+  }
 
   const columns = [
     { 
@@ -81,10 +93,10 @@ function AddEmployee({t, i18n }) {
       render: (rowData) => {
         return (
           <div className="none_wrap">
-            {(+rowData?.submitProfileStatus === 2 || +rowData?.submitProfileStatus === 3 || +rowData?.submitProfileStatus === 5 || +rowData?.submitProfileStatus === 6 ) &&
+            {(+rowData?.submitProfileStatus === 2 || +rowData?.submitProfileStatus === 3 || +rowData?.submitProfileStatus === 5 || +rowData?.submitProfileStatus === 6 || +rowData?.submitProfileStatus === 4 ) &&
               <IconButton
                 size="small"
-                onClick={() => handleEditEmployee(rowData)}
+                onClick={() => handleViewEmployee(rowData)}
               >
                 <Icon color="primary">visibility</Icon>
               </IconButton>
@@ -170,7 +182,15 @@ function AddEmployee({t, i18n }) {
               rowData={rowData}
               setRowData={setRowData}
               showDialogSubmit={showDialogSubmit}
-              handleCloseDialog={handleCloseDialog}
+              handleCloseDialog={handleCloseDialogSubmit}
+            />
+          )}
+
+          {showDialogViewInfor && (
+            <EmployeeInforsDialog
+              rowData={rowData}
+              showDialogViewInfor={showDialogViewInfor}
+              handleCloseDialog={handleCloseDialogViewInfor}
             />
           )}
 
