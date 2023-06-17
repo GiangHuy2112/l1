@@ -14,7 +14,7 @@ import moment from "moment";
 import TableComp from "app/views/Component/TableComp/TableComp";
 import { useState } from "react";
 import { useEffect } from "react";
-import { addFamilyByEmployee, deleteFamilyByEmployee, editFamilyByEmployee, getFamilyByEmployee } from "./addEmployeeService";
+import { addFamilyByEmployee, deleteFamilyByEmployee, editFamilyByEmployee } from "./addEmployeeService";
 import { toast } from "react-toastify";
 import { ConfirmationDialog } from "egret";
 import dataEmployee from "app/constants/dataEmployeeContant";
@@ -29,64 +29,63 @@ const useStyles = makeStyles({
     }
   },
   formContainer: {
-    padding: "20px"
+    padding: "20px",
+    height: "410px"
   },
   tableContainer: {
-    maxHeight: "390px",
-    overflow: "auto"
+    maxHeight: "300px",
+    overflow: "auto",
+    marginTop: "20px"
   }
 });
 
 
 
-export default function FormAddEmployeeFamily({rowData, setRowData}) {
+export default function FormAddEmployeeFamily({rowData, setRowData, listFamilyEmployee, setListFamilyEmployee}) {
     const classes = useStyles();  
     
-    const [listFamilyEmployee, setListFamilyEmployee] = useState([]);
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [totalItems, setTotalItems] = useState(0);
+    
     const [rowDataFamily, setRowDataFamily] = useState({})
     const [showDialogDelete, setShowDialogDelete] = useState(false);
-    const [idFamily, setIdCertificate] = useState()
-    const getListFamilyEmployee = async () => {
-    try {
-      if(rowData?.id) {
-        const res = await getFamilyByEmployee(rowData.id)
-        if(res?.data?.data) {
-          setTotalItems(res.data.data.length)
-          setListFamilyEmployee(res.data.data);
-        }
-      }
-      else if(rowData?.employeeFamilyDtos?.length) {
-        setListFamilyEmployee(rowData.employeeFamilyDtos)
-      }
-    } catch (error) {
-      toast.error("Có lỗi!!!")
-    }
-  };
-
-    useEffect(() => {
-      getListFamilyEmployee();
-    }, [page]);
+    const [idFamily, setIdFamily] = useState()
+    
 
     useEffect(() => {
       setRowData({...rowData, employeeFamilyDtos: listFamilyEmployee});
-      setTotalItems(listFamilyEmployee.length)
     }, [listFamilyEmployee]);
-
-    const handleChangePage = (event, newPage) => {
-      setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-      setRowsPerPage(parseInt(event.target.value, 10));
-      setPage(0);
-    };
 
     const handleChangeInputFamily = (e) => {
       setRowDataFamily({ ...rowDataFamily, [e.target.name]: e.target.value });
     };
+
+    const updateListFamilys = (action, fam, message) => {
+      let listFamEmployee = []
+      if(action === "add") {
+        listFamEmployee = Array.isArray(fam) ? fam : [...listFamilyEmployee, fam]
+      }
+      else if(action === "edit") {
+        listFamEmployee = listFamilyEmployee.map(item => {
+          if((item.id === fam.id && item.id) || (item.idFam === fam.idFam && item.idFam)) {
+            return fam
+          }
+          return item
+        })
+      }
+      else {
+        console.log(idFamily);
+        console.log(listFamilyEmployee);
+         listFamEmployee = listFamilyEmployee.filter(item => {
+            return (item.id !== idFamily && item.id) || (item.idFam !== idFamily && item.idFam)
+          })
+          setShowDialogDelete(false);
+      }
+      console.log(listFamEmployee);
+      
+      setListFamilyEmployee(listFamEmployee)  
+      toast.success(message)
+      
+    }
+
 
     const handleSave = async (e) => {
       e.preventDefault()
@@ -95,8 +94,7 @@ export default function FormAddEmployeeFamily({rowData, setRowData}) {
           if(rowDataFamily.id) {
               const res = await editFamilyByEmployee(rowDataFamily)
               if (res?.data && res?.data.code === STATUS_CODE_SUCCESS) {
-                toast.success("Sửa quan hệ thành công")
-                getListFamilyEmployee()
+               updateListFamilys("edit", res?.data?.data, "Sửa quan hệ thành công")
               } else {
                 toast.warning(res?.data?.message);
               }       
@@ -105,8 +103,7 @@ export default function FormAddEmployeeFamily({rowData, setRowData}) {
           else {
             const res = await addFamilyByEmployee(rowData.id, [rowDataFamily])
             if (res?.data && res?.data.code === STATUS_CODE_SUCCESS) {
-              toast.success("Thêm quan hệ thành công")
-              getListFamilyEmployee()
+             updateListFamilys("add", res?.data?.data, "Thêm quan hệ thành công")
             } else {
               toast.warning(res?.data?.message);
             }   
@@ -119,27 +116,15 @@ export default function FormAddEmployeeFamily({rowData, setRowData}) {
       else {
         // Edit
         if(rowDataFamily.famId) {
-          const listFamEmployee = listFamilyEmployee.map(item => {
-            if(item.famId === rowDataFamily.famId) {
-              return rowDataFamily
-            }
-            return item
-          })
-
-          setListFamilyEmployee(listFamEmployee)
-          toast.success("Sửa quan hệ thành công")
+          updateListFamilys("edit", rowDataFamily, "Sửa quan hệ thành công")
         }
         // Add
         else {
-          setListFamilyEmployee([
-            ...listFamilyEmployee,
-            {
-              famId: moment().valueOf(),
+          const rowDataFamAdd = {
+              idFam: moment().valueOf(),
               ...rowDataFamily
             }
-          ])
-          toast.success("Thêm mới quan hệ thành công")
-
+          updateListFamilys("add", rowDataFamAdd, "Thêm quan hệ thành công")
         }
       }
       setRowDataFamily({})
@@ -155,7 +140,7 @@ export default function FormAddEmployeeFamily({rowData, setRowData}) {
 
     const handleOpenDialogDelete = (id) => {
       setShowDialogDelete(true);
-      setIdCertificate(id)
+      setIdFamily(id)
     }
 
     const handleDeleteFamily = async () => {
@@ -163,9 +148,10 @@ export default function FormAddEmployeeFamily({rowData, setRowData}) {
       try {
         const res = await deleteFamilyByEmployee(idFamily)    
         if(res?.data && res?.data?.code === STATUS_CODE_SUCCESS) {
-          getListFamilyEmployee();
-          toast.success("Xóa quan hệ thành công!");    
-          setShowDialogDelete(false);
+          if(idFamily === rowDataFamily.id) {
+            setRowDataFamily({})
+          }
+          updateListFamilys("delete", null, "Xóa quan hệ thành công")
         }
         else {
           toast.error(res?.data?.message);   
@@ -175,16 +161,13 @@ export default function FormAddEmployeeFamily({rowData, setRowData}) {
       }
      }
      else {
-      const listFamEmployee = listFamilyEmployee.filter(item => {
-        return item.famId !== idFamily
-      })
-      setListFamilyEmployee(listFamEmployee)
-        toast.success("Xóa quan hệ thành công")
+      if(idFamily === rowDataFamily.idFam) {
+            setRowDataFamily({})
+          }
+          updateListFamilys("delete", null, "Xóa quan hệ thành công")
      }
-     setShowDialogDelete(false);
     }
 
-    console.log(rowData);
 
     const columns = [
     { 
@@ -225,7 +208,7 @@ export default function FormAddEmployeeFamily({rowData, setRowData}) {
   ];
   return (
     <div className={classes.formContainer}>
-      <ValidatorForm classes={classes.formContainer} onSubmit={handleSave}>
+      <ValidatorForm onSubmit={handleSave}>
         <Grid className="" container spacing={2}>
           <Grid item lg={4} md={4} sm={12} xs={12}>
             <TextValidator
@@ -428,7 +411,7 @@ export default function FormAddEmployeeFamily({rowData, setRowData}) {
                 validators={["required", "isPhoneNumberValid"]}
                 errorMessages={[
                   "Trường này không được để trống",
-                  "Số điện thoại phải có 10 chữ số",
+                  "Số điện thoại phải bắt đầu bằng 0 và có 10 chữ số",
                 ]}
                 onChange={handleChangeInputFamily}
               />
@@ -464,11 +447,8 @@ export default function FormAddEmployeeFamily({rowData, setRowData}) {
       <div className={classes.tableContainer}>
         <TableComp
           listData={listFamilyEmployee} 
-          columns={columns} page={page} 
-          handleChangePage={handleChangePage} 
-          totalItems={totalItems} 
-          rowsPerPage={rowsPerPage} 
-          handleChangeRowsPerPage={handleChangeRowsPerPage} 
+          columns={columns} 
+          onlyTable={true}
         /> 
         {showDialogDelete && (
             <ConfirmationDialog

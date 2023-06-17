@@ -19,6 +19,7 @@ import manageEmployeeRoutes from "./views/Manage/ManageEmployee/manageEmployeeRo
 import releaseEmployeeRoutes from "./views/Manage/Release/releaseEmployeeRoutes";
 import approvalEmployeeRoutes from "./views/Leader/Approval/approvalEmployeeRoutes";
 import approvedEmployeeRoutes from "./views/Leader/Approved/approvedEmployeeRoutes";
+import approvalUpdateRoutes from "./views/Leader/ApprovalUpdate/approvalUpdateRoutes";
 
 const redirectRoute = [
   {
@@ -48,6 +49,7 @@ const routes = [
   ...manageEmployeeRoutes,
   ...releaseEmployeeRoutes,
   ...approvalEmployeeRoutes,
+  ...approvalUpdateRoutes,
   ...approvedEmployeeRoutes,
   ...ShiftWorkRouters, 
   ...ColorRoutes, 

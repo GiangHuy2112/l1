@@ -9,16 +9,47 @@
 @import "./layouts/index";
 @import "./views/index";
 @import "custom.scss";
+
 .MuiTableSortLabel-root:hover {
     color: #ccc !important;
 }
+
 .MuiFormLabel-root.MuiInputLabel-root.MuiInputLabel-formControl.MuiInputLabel-animated.MuiInputLabel-outlined {
     font-size: 17px !important;
 }
+
 input.MuiInputBase-input.MuiOutlinedInput-input {
     font-size: 17px !important;
 }
 
 .MuiTableCell-root.MuiTableCell-head.MuiTableCell-alignLeft:nth-child(1) {
-    width: 10px !important;
+    width: 50px !important;
+}
+
+// .MuiTableCell-root.MuiTableCell-head.MuiTableCell-alignLeft:nth-child(2) {
+//     width: 110px !important;
+// }
+.MuiTableCell-root.MuiTableCell-head.MuiTableCell-alignLeft {
+    border: 1px solid #000 !important;
+}
+
+button .MuiTab-wrapper {
+    width: fit-content;
+}
+
+.MuiInputBase-input.MuiInput-input {
+    padding: 0 !important;
+    font-size: 16px !important;
+}
+
+.MuiFormControl-root.MuiTextField-root.MuiFormControl-fullWidth {
+    // padding: 0 16px !important;
+}
+
+.MuiTableCell-root.MuiTableCell-body.MuiTableCell-alignLeft {
+    border: 1px solid #000 !important;
+}
+
+.MuiButtonBase-root.MuiButton-root.MuiButton-contained.MuiButton-containedSecondary {
+    color: #fff !important;
 }

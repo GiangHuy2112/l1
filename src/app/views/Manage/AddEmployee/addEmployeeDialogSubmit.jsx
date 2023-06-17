@@ -15,6 +15,9 @@ import { ValidatorForm } from "react-material-ui-form-validator";
 import {
   addEmployee,
   editEmployee,
+  getCertificatesByEmployee,
+  getFamilyByEmployee,
+  getImageEmployee,
 } from "./addEmployeeService";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -25,6 +28,7 @@ import FormAddCertificates from "./formAddCertificates";
 import FormAddEmployeeFamily from "./formAddEmployeeFamily";
 import { countObjectKeys } from "utils";
 import { useState } from "react";
+import ProfileInforDialog from "./profileInforDialog";
 
 const useStyles = makeStyles({
   dialogTitle: {
@@ -38,7 +42,7 @@ const useStyles = makeStyles({
     color: "#409b3e",
   },
   dialogContent: {
-    minHeight: "390px",
+    height: "410px",
     overflow: "auto",
     paddingTop: "20px !important",
     paddingBottom: "20px !important",
@@ -60,9 +64,46 @@ const useStyles = makeStyles({
 
 export default function EmployeeDialogSubmit(props) {
   const classes = useStyles();
-  const { showDialogSubmit, handleCloseDialog, rowData, setRowData, getAllEmployee } = props;
+  const { showDialogSubmit, handleCloseDialog, rowData, setRowData, getAllEmployee, handleCloseAlertDialog } = props;
   const [isDisableRegisterBtn, setIsDisableRegisterBtn] = useState(true)
   const [valueDialog, setValueDialog] = React.useState(0);
+  const [showDialogProfile, setShowDialogProfile] = useState(false);
+
+  
+  const [listCertificateEmployee, setListCertificateEmployee] = useState([]);
+  const [listFamilyEmployee, setListFamilyEmployee] = useState([]);
+  
+
+  const getListCertificateEmployee = async () => {
+    try {
+      if(rowData?.id) {
+        const res = await getCertificatesByEmployee(rowData.id)
+        if(res?.data?.data) {
+          setListCertificateEmployee(res.data.data);
+        }
+      }
+      // else if(rowData?.certificatesDto?.length) {
+      //   setListCertificateEmployee(rowData.certificatesDto)
+      // }
+    } catch (error) {
+      toast.error("Có lỗi!!!")
+    }
+  };
+    const getListFamilyEmployee = async () => {
+    try {
+      if(rowData?.id) {
+        const res = await getFamilyByEmployee(rowData.id)
+        if(res?.data?.data) {
+          setListFamilyEmployee(res.data.data);
+        }
+      }
+      // else if(rowData?.employeeFamilyDtos?.length) {
+      //   setListFamilyEmployee(rowData.employeeFamilyDtos)
+      // }
+    } catch (error) {
+      toast.error("Có lỗi!!!")
+    }
+  };
 
   useEffect(() => {
     if(!rowData.id) {
@@ -70,6 +111,11 @@ export default function EmployeeDialogSubmit(props) {
         certificatesDto: [],
         employeeFamilyDtos: []
       })
+    }
+    else {
+      getListCertificateEmployee();
+      getListFamilyEmployee();
+      setIsDisableRegisterBtn(false)
     }
   }, [])
 
@@ -96,6 +142,7 @@ export default function EmployeeDialogSubmit(props) {
     }
     try {
       if (rowData?.id) {
+        console.log(rowData);
           const res = await editEmployee(rowData)
           if (res?.data && res?.data.code === STATUS_CODE_SUCCESS) {
             submitEmployeeSuccessed("Sửa nhân viên thành công")
@@ -107,6 +154,9 @@ export default function EmployeeDialogSubmit(props) {
           const res = await addEmployee(rowData)
           if (res?.data && res?.data?.code === STATUS_CODE_SUCCESS) {
             submitEmployeeSuccessed("Thêm nhân viên thành công")
+            setRowData(
+              res.data.data
+            )
             setIsDisableRegisterBtn(false);
           } else {
             toast.warning(res?.data?.message);
@@ -116,7 +166,14 @@ export default function EmployeeDialogSubmit(props) {
         toast.error("Có lỗi");
       }
   };
-  console.log(rowData);
+
+  const handleOpenRegisterDialog = () => {
+    setShowDialogProfile(true)
+  }
+
+  const handleCloseDialogProfile = () => {
+    setShowDialogProfile(false)
+  }
 
   return (
     <Dialog maxWidth="md" fullWidth={true} open={showDialogSubmit} onClose={handleCloseDialog}>
@@ -143,10 +200,25 @@ export default function EmployeeDialogSubmit(props) {
         </Tabs>
       </Paper>
       {
-        valueDialog === 1 && <FormAddCertificates rowData={rowData} handleChangeInput={handleChangeInput} setRowData={setRowData}/>
+        valueDialog === 1 && 
+        <FormAddCertificates 
+          rowData={rowData} 
+          handleChangeInput={handleChangeInput} 
+          setRowData={setRowData} 
+          listCertificateEmployee={listCertificateEmployee} 
+          setListCertificateEmployee={setListCertificateEmployee}
+        />
       }
       {
-        valueDialog === 2 && <FormAddEmployeeFamily rowData={rowData} handleChangeInput={handleChangeInput} setRowData={setRowData}/>
+        valueDialog === 2 && 
+        <FormAddEmployeeFamily 
+        rowData={rowData} 
+        handleChangeInput={handleChangeInput} 
+        setRowData={setRowData}
+        listFamilyEmployee={listFamilyEmployee}
+        setListFamilyEmployee={setListFamilyEmployee}
+        
+        />
       }
       <ValidatorForm onSubmit={handleOnSubmit}>
         { valueDialog === 0 &&
@@ -161,7 +233,6 @@ export default function EmployeeDialogSubmit(props) {
                 variant="contained"
                 className="mr-12"
                 color="secondary"
-                disabled={!isDisableRegisterBtn}
               >
                 LƯU
               </Button>
@@ -170,6 +241,7 @@ export default function EmployeeDialogSubmit(props) {
                 className="mr-12"
                 color="primary"
                 disabled={isDisableRegisterBtn}
+                onClick={handleOpenRegisterDialog}
               >
                 ĐĂNG KÝ
               </Button>
@@ -187,6 +259,21 @@ export default function EmployeeDialogSubmit(props) {
             </div>
         </DialogActions>
       </ValidatorForm>
+
+      {
+        showDialogProfile && 
+        <ProfileInforDialog 
+        rowData={rowData}
+        setRowData={setRowData}
+        showDialogProfile={showDialogProfile}
+        handleCloseDialogProfile={handleCloseDialogProfile}
+        getAllEmployee={getAllEmployee}
+        listFamilyEmployee={listFamilyEmployee}
+        listCertificateEmployee={listCertificateEmployee}
+        handleCloseDialog={handleCloseDialog}
+        handleCloseAlertDialog={handleCloseAlertDialog}
+        />
+      }
     </Dialog>
   );
 }

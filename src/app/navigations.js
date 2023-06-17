@@ -12,6 +12,12 @@ export const navigations = [
         icon: "cached",
       },
       {
+        name: "Chờ duyệt cập nhật diễn biến",
+        isVisible: true,
+        path: ConstantList.ROOT_PATH + "approval_update",
+        icon: "cached",
+      },
+      {
         name: "Đã duyệt",
         isVisible: true,
         path: ConstantList.ROOT_PATH + "approved_employee",

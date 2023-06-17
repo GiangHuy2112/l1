@@ -4,28 +4,32 @@ import { Box, Button, Grid, Icon, IconButton } from "@material-ui/core";
 import { Breadcrumb, ConfirmationDialog } from "egret";
 import { toast } from "react-toastify";
 import EmployeeDialogSubmit from "./addEmployeeDialogSubmit";
-import { deleteEmployee, getListEmployee } from "./addEmployeeService";
+import { deleteEmployee, getCertificatesByEmployee, getFamilyByEmployee, getListEmployee } from "./addEmployeeService";
 import "react-toastify/dist/ReactToastify.css";
 import { STATUS_CODE_SUCCESS } from "app/constants/statusContant";
-import dataEmployee from "app/constants/dataEmployeeContant";
+import dataEmployee, { STATUS_ADDITIONAL_REQUEST, STATUS_REFUSE } from "app/constants/dataEmployeeContant";
 import TablePaginationComp from '../../Component/TablePagination/TablePagination';
 import TableComp from "app/views/Component/TableComp/TableComp";
-import EmployeeInforsDialog from "./employeeInformationDialog";
+import ProfileInforDialog from "./profileInforDialog";
+import AlertDialog from "./alertDialog";
 
 function AddEmployee({t, i18n }) {
   const [listEmployee, setListEmployee] = useState([]);
   const [showDialogSubmit, setShowDialogSubmit] = useState(false);
-  const [showDialogViewInfor, setShowDialogViewInfor] = useState(false);
+  const [showDialogProfile, setShowDialogProfile] = useState(false);
   const [showDialogDelete, setShowDialogDelete] = useState(false);
   const [idEmployee, setIdEmployee] = useState();
   const [rowData, setRowData] = useState({});
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
+  const [listCertificateEmployee, setListCertEmployee] = useState([]);
+  const [listFamilyEmployee, setListFarmEmployee] = useState([]);
+  const [showDialogAlert, setShowDialogAlert] = useState(false);
 
   const getAllEmployee = async () => {
     try {
-      const res = await getListEmployee(page+1, 10, "")
+      const res = await getListEmployee(page+1, rowsPerPage, "")
       if(res?.data?.data) {
         setTotalItems(res.data.totalElements)
         setListEmployee(res.data.data);
@@ -35,10 +39,24 @@ function AddEmployee({t, i18n }) {
     }
   };
 
+  const getListCertAndFam = async (rowData) => {
+        try {
+            const resCert = await getCertificatesByEmployee(rowData.id);
+            const resFam = await getFamilyByEmployee(rowData.id);
+            if(resCert?.data?.data) {
+                setListCertEmployee(resCert.data.data)
+            }
+            if(resFam?.data?.data) {
+                setListFarmEmployee(resFam.data.data)
+            }
+        } catch (error) {
+            toast.error("Có lỗi!!!")
+        }
+    } 
 
   useEffect(() => {
     getAllEmployee();
-  }, [page]);
+  }, [page, rowsPerPage]);
 
 
   const handleOpenDialogDelete = (id) => {
@@ -64,12 +82,19 @@ function AddEmployee({t, i18n }) {
 
   const handleEditEmployee = (rowData) => {
     setRowData(rowData);
+    
     setShowDialogSubmit(true);
   };
 
   const handleViewEmployee = (rowData) => {
+    if(+rowData.submitProfileStatus === STATUS_ADDITIONAL_REQUEST || +rowData.submitProfileStatus === STATUS_REFUSE ) {
+      setShowDialogAlert(true)
+    }
+    else {
+      setShowDialogProfile(true)
+    }
     setRowData(rowData);
-    setShowDialogViewInfor(true)
+    getListCertAndFam(rowData)
   }
 
   const handleCloseDialogSubmit = () => {
@@ -77,8 +102,8 @@ function AddEmployee({t, i18n }) {
     setRowData({});
   };
 
-  const handleCloseDialogViewInfor = () => {
-    setShowDialogViewInfor(false);
+  const handleCloseDialogProfile = () => {
+    setShowDialogProfile(false);
     setRowData({});
   }
 
@@ -101,7 +126,7 @@ function AddEmployee({t, i18n }) {
                 <Icon color="primary">visibility</Icon>
               </IconButton>
             }
-            {(+rowData?.submitProfileStatus === 1 || +rowData?.submitProfileStatus === 4 || +rowData?.submitProfileStatus === 5) &&
+            {(+rowData?.submitProfileStatus === 1) &&
               <IconButton
                 size="small"
                 onClick={() => handleEditEmployee(rowData)}
@@ -138,10 +163,13 @@ function AddEmployee({t, i18n }) {
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
   };
+  console.log(rowsPerPage);
+  console.log(page);
 
-  
+  const handleCloseAlertDialog = () => {
+    setShowDialogAlert(false);
+  }
 
   return (
     <div className="m-sm-30">
@@ -186,11 +214,14 @@ function AddEmployee({t, i18n }) {
             />
           )}
 
-          {showDialogViewInfor && (
-            <EmployeeInforsDialog
+          {showDialogProfile && (
+            <ProfileInforDialog 
               rowData={rowData}
-              showDialogViewInfor={showDialogViewInfor}
-              handleCloseDialog={handleCloseDialogViewInfor}
+              showDialogProfile={showDialogProfile}
+              handleCloseDialogProfile={handleCloseDialogProfile}
+              listCertificateEmployee={listCertificateEmployee}
+              listFamilyEmployee={listFamilyEmployee}
+              readOnly= {true}
             />
           )}
 
@@ -205,6 +236,16 @@ function AddEmployee({t, i18n }) {
               No={"Hủy bỏ"}
             />
           )}
+          {
+            showDialogAlert &&
+            <AlertDialog 
+              rowData={rowData}
+              setRowData={setRowData}
+              getAllEmployee={getAllEmployee}
+              showDialogAlert={showDialogAlert}
+              handleCloseAlertDialog={handleCloseAlertDialog}
+            />
+          }
         </Grid>
       </Grid>
     </div>

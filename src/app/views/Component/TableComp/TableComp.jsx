@@ -10,7 +10,7 @@ function TableComp({listData , columns, page, handleChangePage, totalItems, rows
     <>
  
             <MaterialTable
-                title={false}
+                title={""}
                 data={listData}
                 columns={columns}
                 page={page}

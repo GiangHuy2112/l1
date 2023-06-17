@@ -14,7 +14,12 @@ import avatarDefault from "../../../public/assets/avatarDefault.jpg"
 import { makeStyles } from '@material-ui/core/styles';
 import moment from "moment";
 import { isBase64Image } from "utils";
-
+import { toast } from "react-toastify";
+import { getLinkAvatarEmployee, uploadImageEmployee } from "./addEmployeeService";
+import { STATUS_CODE_SUCCESS } from "app/constants/statusContant";
+import { useState } from "react";
+import { useEffect } from "react";
+import ConstantList from "../../../appConfig";
 const useStyles = makeStyles({
     formContainer: {
         height: "400px",
@@ -50,23 +55,49 @@ const useStyles = makeStyles({
 
 
 export default function FormAddEmployee({rowData, setRowData, handleChangeInput}) {
-    const classes = useStyles();    
-    const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setRowData({ ...rowData, image: reader.result });
-    };
-    if (file) {
-      reader.readAsDataURL(file);
-    }
+    const classes = useStyles();  
+    const [imagePreview, setImagePreview] = useState("")
+    
+   const uploadImage = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
 
-}
+    const response = await uploadImageEmployee(formData)
+    console.log(response);
+
+    if (response?.status === STATUS_CODE_SUCCESS) {
+      // Xử lý khi tải lên thành công
+
+      setRowData({ ...rowData, image: response.data.name });
+    } else {
+      // Xử lý khi tải lên thất bại
+      toast.error('Lỗi khi tải lên');
+    }
+  } catch (error) {
+    toast.error('Lỗi khi tải lên', error);
+  }
+};
+
+const handleImageChange = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    uploadImage(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+console.log(rowData);
+
   return (
     
     <Grid className={classes.formContainer} container spacing={3}>
         <Grid className={classes.avatarContainer} item lg={3} md={3} sm={3} xs={3}>
-            <Avatar className={classes.large} alt="Remy Sharp" src={isBase64Image(rowData.image) ? rowData.image : avatarDefault} />  
+            <Avatar className={classes.large} alt="Remy Sharp" src={isBase64Image(imagePreview) ? imagePreview : getLinkAvatarEmployee(rowData.image)} />  
             <input
                 accept="image/*"
                 hidden

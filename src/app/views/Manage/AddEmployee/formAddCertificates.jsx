@@ -12,7 +12,7 @@ import moment from "moment";
 import TableComp from "app/views/Component/TableComp/TableComp";
 import { useState } from "react";
 import { useEffect } from "react";
-import { addCertificateEmployee, deleteCertificateEmployee, editCertificateEmployee, getCertificatesByEmployee } from "./addEmployeeService";
+import { addCertificateEmployee, deleteCertificateEmployee, editCertificateEmployee } from "./addEmployeeService";
 import { toast } from "react-toastify";
 import { ConfirmationDialog } from "egret";
 import { STATUS_CODE_SUCCESS } from "app/constants/statusContant";
@@ -26,66 +26,61 @@ const useStyles = makeStyles({
     }
   },
   formContainer: {
-    padding: "20px"
+    padding: "20px",
+    height: "410px"
   },
   tableContainer: {
-    maxHeight: "390px",
-    overflow: "auto"
+    maxHeight: "300px",
+    overflow: "auto",
+    marginTop: "20px"
   }
 });
 
 
 
-export default function FormAddCertificates({rowData, setRowData}) {
+export default function FormAddCertificates({rowData, setRowData, listCertificateEmployee, setListCertificateEmployee}) {
     const classes = useStyles();  
     
-    const [listCertificateEmployee, setListCertificateEmployee] = useState([]);
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [totalItems, setTotalItems] = useState(0);
     const [rowDataCertificate, setRowDataCertificate] = useState({})
     const [showDialogDelete, setShowDialogDelete] = useState(false);
     const [idCertificate, setIdCertificate] = useState()
-    const getListCertificateEmployee = async () => {
-    try {
-      if(rowData?.id) {
-        const res = await getCertificatesByEmployee(rowData.id)
-        if(res?.data?.data) {
-          setTotalItems(res.data.data.length)
-          setListCertificateEmployee(res.data.data);
-        }
-      }
-      else if(rowData?.certificatesDto?.length) {
-        setListCertificateEmployee(rowData.certificatesDto)
-      }
-    } catch (error) {
-      toast.error("Có lỗi!!!")
-    }
-  };
-
-    useEffect(() => {
-      getListCertificateEmployee();
-    }, [page]);
+    
 
     useEffect(() => {
       setRowData({...rowData, certificatesDto: listCertificateEmployee});
-      setTotalItems(listCertificateEmployee.length)
-    }, [listCertificateEmployee]);
-
-    const handleChangePage = (event, newPage) => {
-      setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-      setRowsPerPage(parseInt(event.target.value, 10));
-      setPage(0);
-    };
+    }, []);
 
     const handleChangeInputCertificate = (e) => {
       setRowDataCertificate({ ...rowDataCertificate, [e.target.name]: e.target.value });
     };
 
-
+    const updateListCertificates = (action, cert, message) => {
+      let listCertEmployee = []
+      if(action === "add") {
+        listCertEmployee = Array.isArray(cert) ? cert : [...listCertificateEmployee, cert]
+      }
+      else if(action === "edit") {
+        listCertEmployee = listCertificateEmployee.map(item => {
+          if((item.id === cert.id && item.id) || (item.idCert === cert.idCert && item.idCert)) {
+            return cert
+          }
+          return item
+        })
+      }
+      else {
+        console.log(idCertificate);
+        console.log(listCertificateEmployee);
+         listCertEmployee = listCertificateEmployee.filter(item => {
+            return (item.id !== idCertificate && item.id) || (item.idCert !== idCertificate && item.idCert)
+          })
+          setShowDialogDelete(false);
+      }
+      console.log(listCertEmployee);
+      
+      setListCertificateEmployee(listCertEmployee)  
+      toast.success(message)
+      
+    }
 
     const handleSave = async (e) => {
       e.preventDefault()
@@ -93,9 +88,9 @@ export default function FormAddCertificates({rowData, setRowData}) {
         try {
           if(rowDataCertificate.id) {
             const res = await editCertificateEmployee(rowDataCertificate)
-            if (res?.data && res?.data.code === STATUS_CODE_SUCCESS) {
-              toast.success("Sửa văn bằng thành công")
-              getListCertificateEmployee()
+            if (res?.data && res?.data?.code === STATUS_CODE_SUCCESS) {
+              updateListCertificates("edit", res?.data?.data, "Sửa văn bằng thành công")
+
             } else {
               toast.warning(res?.data?.message);
             }       
@@ -104,8 +99,7 @@ export default function FormAddCertificates({rowData, setRowData}) {
           else {
             const res = await addCertificateEmployee(rowData.id, [rowDataCertificate])
             if (res?.data && res?.data.code === STATUS_CODE_SUCCESS) {
-              toast.success("Thêm văn bằng thành công")
-              getListCertificateEmployee()
+              updateListCertificates("add", res?.data?.data, "Thêm văn bằng thành công")
             } else {
               toast.warning(res?.data?.message);
             }   
@@ -119,26 +113,17 @@ export default function FormAddCertificates({rowData, setRowData}) {
       else {
         // Edit
         if(rowDataCertificate.idCert) {
-          const listCertEmployee = listCertificateEmployee.map(item => {
-            if(item.idCert === rowDataCertificate.idCert) {
-              return rowDataCertificate
-            }
-            return item
-          })
-
-          setListCertificateEmployee(listCertEmployee)
-          toast.success("Sửa văn bằng thành công")
+            updateListCertificates("edit", rowDataCertificate, "Sửa văn bằng thành công")
         }
         // Add
         else {
-          setListCertificateEmployee([
-            ...listCertificateEmployee,
-            {
+            const rowDataCertAdd = {
               idCert: moment().valueOf(),
               ...rowDataCertificate
             }
-          ])
-          toast.success("Thêm văn bằng thành công")
+            
+          
+          updateListCertificates("add", rowDataCertAdd, "Thêm văn bằng thành công")
         }
       }
       setRowDataCertificate({})
@@ -149,6 +134,7 @@ export default function FormAddCertificates({rowData, setRowData}) {
     };
 
     const handleFillInputToEdit = (rowDataCertificate) => {
+      console.log(rowDataCertificate);
       setRowDataCertificate(rowDataCertificate)
     }
 
@@ -162,9 +148,10 @@ export default function FormAddCertificates({rowData, setRowData}) {
       try {
         const res = await deleteCertificateEmployee(idCertificate)    
         if(res?.data && res?.data?.code === STATUS_CODE_SUCCESS) {
-          getListCertificateEmployee();
-          toast.success("Xóa văn bằng thành công!");    
-          setShowDialogDelete(false);
+          if(idCertificate === rowDataCertificate.id) {
+            setRowDataCertificate({})
+          }
+          updateListCertificates("delete", null, "Xóa văn bằng thành công")
         }
         else {
           toast.error(res?.data?.message);   
@@ -174,16 +161,12 @@ export default function FormAddCertificates({rowData, setRowData}) {
       }
      }
      else {
-      const listCertEmployee = listCertificateEmployee.filter(item => {
-        return item.idCert !== idCertificate
-      })
-      setListCertificateEmployee(listCertEmployee)
+          if(idCertificate === rowDataCertificate.idCert) {
+            setRowDataCertificate({})
+          }
+          updateListCertificates("delete", null, "Xóa văn bằng thành công")
     }
-     setShowDialogDelete(false);
     }
-
-
-    console.log(rowData);
 
     const columns = [
     { 
@@ -223,7 +206,7 @@ export default function FormAddCertificates({rowData, setRowData}) {
   ];
   return (
     <div className={classes.formContainer}>
-      <ValidatorForm classes={classes.formContainer} onSubmit={handleSave}>
+      <ValidatorForm onSubmit={handleSave}>
         <Grid className="" container spacing={2}>
           <Grid item lg={4} md={4} sm={12} xs={12}>
             <TextValidator
@@ -290,7 +273,6 @@ export default function FormAddCertificates({rowData, setRowData}) {
               validators={["required"]}
               errorMessages={[
                 "Trường này không được để trống",
-                "Oh no",
               ]}
               onChange={handleChangeInputCertificate}
             />
@@ -346,11 +328,13 @@ export default function FormAddCertificates({rowData, setRowData}) {
       <div className={classes.tableContainer}>
         <TableComp
           listData={listCertificateEmployee} 
-          columns={columns} page={page} 
-          handleChangePage={handleChangePage} 
-          totalItems={totalItems} 
-          rowsPerPage={rowsPerPage} 
-          handleChangeRowsPerPage={handleChangeRowsPerPage} 
+          columns={columns} 
+          onlyTable={true}
+          // page={page} 
+          // handleChangePage={handleChangePage} 
+          // totalItems={totalItems} 
+          // rowsPerPage={rowsPerPage} 
+          // handleChangeRowsPerPage={handleChangeRowsPerPage} 
         /> 
         {showDialogDelete && (
             <ConfirmationDialog

@@ -1,24 +1,33 @@
-import React, { useEffect, useState } from "react";
-import MaterialTable from "material-table";
-import { Box, Button, Grid, Icon, IconButton } from "@material-ui/core";
-import { Breadcrumb, ConfirmationDialog } from "egret";
-import { toast } from "react-toastify";
-import EmployeeDialogSubmit from "./releaseEmployeeDialogSubmit";
-import { deleteEmployee, getEmployees } from "./releaseEmployeeService";
+import React from "react";
+import { Box, Grid, Icon, IconButton } from "@material-ui/core";
+import { Breadcrumb } from "egret";
 import "react-toastify/dist/ReactToastify.css";
-import { STATUS_CODE_SUCCESS } from "app/constants/statusContant";
 
-function ReleaseEmployee({t, i18n }) {
+import dataEmployee, { STATUS_PENDING_APPROVAL } from "app/constants/dataEmployeeContant";
+import { getCertificatesByEmployee, getEmployeeById, getFamilyByEmployee, getListEmployee } from "app/views/Manage/AddEmployee/addEmployeeService";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import TableComp from "app/views/Component/TableComp/TableComp";
+import ProfileInforDialog from "app/views/Manage/AddEmployee/profileInforDialog";
+import ModalUpdateHappenings from "app/views/Manage/Modals/modal";
+
+
+function ApprovalEmployee({t, i18n }) {
   const [listEmployee, setListEmployee] = useState([]);
-  const [showDialogSubmit, setShowDialogSubmit] = useState(false);
-  const [showDialogDelete, setShowDialogDelete] = useState(false);
-  const [idEmployee, setIdEmployee] = useState();
+  const [showDialogProfile, setShowDialogProfile] = useState(false);
   const [rowData, setRowData] = useState({});
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [listCertificateEmployee, setListCertEmployee] = useState([]);
+  const [listFamilyEmployee, setListFarmEmployee] = useState([]);
+  const [showDialogEndProfile, setShowDialogEndProfile] = useState(false);
 
   const getAllEmployee = async () => {
     try {
-      const res = await getEmployees()
+      const res = await getListEmployee(page + 1, rowsPerPage, "", "7")
       if(res?.data?.data) {
+        setTotalItems(res.data.totalElements)
         setListEmployee(res.data.data);
       }
     } catch (error) {
@@ -26,153 +35,139 @@ function ReleaseEmployee({t, i18n }) {
     }
   };
 
-  useEffect(() => {
-    getAllEmployee();
-  }, []);
+  const getListCertAndFam = async (rowData) => {
+        try {
+            const resCert = await getCertificatesByEmployee(rowData.id);
+            const resFam = await getFamilyByEmployee(rowData.id);
+            if(resCert?.data?.data) {
+                setListCertEmployee(resCert.data.data)
+            }
+            if(resFam?.data?.data) {
+                setListFarmEmployee(resFam.data.data)
+            }
+        } catch (error) {
+            toast.error("Có lỗi!!!")
+        }
+    } 
 
-  const handleOpenDialogDelete = (id) => {
-    setIdEmployee(id);
-    setShowDialogDelete(true);
-  };
+  useEffect( () => {
+     getAllEmployee();
+  }, [page, rowsPerPage]);
 
-  const handleDeleteEmployee = async () => {
-    try {
-      const res = await deleteEmployee(idEmployee)    
-      if(res?.data && res?.data?.code === STATUS_CODE_SUCCESS) {
-        getAllEmployee();
-        toast.success("Xóa nhân viên thành công!");    
-        setShowDialogDelete(false);
+
+  const handleViewEmployee = (rowData) => { 
+      if(rowData.submitProfileStatus === 2) {
+        setShowDialogProfile(true)
       }
       else {
-        toast.error("Xóa nhân viên không thành công!");   
+        setShowDialogEndProfile(true)
       }
-    } catch (error) {     
-      toast.error("Có lỗi!!!");
-    }
-  };
+      setRowData(rowData);
+      getListCertAndFam(rowData)
 
-  const handleEditEmployee = (rowData) => {
-    setRowData(rowData);
-    setShowDialogSubmit(true);
-  };
+  }
 
-  const handleCloseDialog = () => {
-    setShowDialogSubmit(false);
+  const handleCloseDialogEndProfile = () => {
+    setShowDialogEndProfile(false);
     setRowData({});
-  };
+  }
+
+  const handleCloseDialogProfile = () => {
+    setShowDialogProfile(false);
+    setRowData({});
+  }
+
 
   const columns = [
+    { 
+      title: "STT",
+      render: (rowData) => rowData?.tableData?.id + 1,
+    },
     {
       title: "Thao tác",
       field: "action",
       render: (rowData) => {
         return (
           <div className="none_wrap">
-            <IconButton
-              size="small"
-              onClick={() => handleEditEmployee(rowData)}
-            >
-              <Icon color="primary">edit</Icon>
-            </IconButton>
-
-            <IconButton
-              size="small"
-              onClick={() => handleOpenDialogDelete(rowData.id)}
-            >
-              <Icon style={{ color: "red", margin: "0px 0px 0px 10px" }}>
-                delete
-              </Icon>
-            </IconButton>
+            {(+rowData?.submitProfileStatus === 7) &&
+              <IconButton
+                size="small"
+                onClick={() => handleViewEmployee(rowData)}
+              >
+                <Icon color="primary">visibility</Icon>
+              </IconButton>
+            }
+            
           </div>
         );
       },
     },
-    { title: t("employee.name"), field: "name" },
-    { title: t("employee.age"), field: "age" },
-    { title: t("employee.email"), field: "email" },
-    { title: t("employee.phone"), field: "phone" },
+    { title: t("Mã nhân viên"), field: "code"},
+    { title: t("Họ và tên"), field: "name" },
+    { title: t("Địa chỉ"), field: "address" },
+    { title: t("Số điện thoại"), field: "phone" },
+    { title: t("Trạng thái"), field: "submitProfileStatus", render:(rowData) =>dataEmployee.status.find(status=>+rowData.submitProfileStatus===status.id)?.name }
   ];
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+  };
+
 
   return (
     <div className="m-sm-30">
       <Box mb={2}>
         <Breadcrumb
           routeSegments={[
-            { name: t("Dashboard.manage") },
-            { name: t('Thêm mới nhân viên')  },
+            { name: t("Quản lý") },
+            { name: t('Kết thúc')  },
           ]}
         />
       </Box>
 
       <Grid container spacing={2} justify="space-between">
         <Grid item xs={12}>
-          <Box position="absolute" top={80} left={50} zIndex={1}>
-            <Button
-                variant="contained"
-                color="primary"
-                style={{ top: "5px" }}
-                onClick={() => setShowDialogSubmit(true)}
-              >
-              Thêm nhân viên
-            </Button>
-          </Box>
-          <MaterialTable
-            title={false}
-            data={listEmployee}
-            columns={columns}
-            localization={
-              {
-                toolbar: {
-                  searchPlaceholder: 'Tìm kiếm',
-                },
-                pagination: {
-                  labelDisplayedRows: "{from}-{to} của {count}",
-                  labelRowsPerPage: "Số bản ghi mỗi trang:",
-                  firstTooltip: "Trang đầu",
-                  previousTooltip: "Trang trước",
-                  nextTooltip: "Trang tiếp",
-                  lastTooltip: "Trang cuối",
-                  labelRowsSelect: "bản ghi/trang",
-                },
-              }
-            }
-            options={{
-              exportButton: true,
-              exportAllData: true,
-              pageSize: 8,
-              pageSizeOptions: [5, 8, 10, 20],
-              headerStyle: {
-                backgroundColor: "#358600",
-                color: "#FFF",
-              },
-            }}
+          <TableComp
+            listData={listEmployee} 
+            columns={columns} page={page} 
+            handleChangePage={handleChangePage} 
+            totalItems={totalItems} 
+            rowsPerPage={rowsPerPage} 
+            handleChangeRowsPerPage={handleChangeRowsPerPage} 
           />
 
-          {showDialogSubmit && (
-            <EmployeeDialogSubmit
-              getAllEmployee={getAllEmployee}
+          {showDialogProfile && (
+            <ProfileInforDialog
               rowData={rowData}
               setRowData={setRowData}
-              showDialogSubmit={showDialogSubmit}
-              handleCloseDialog={handleCloseDialog}
-            />
-          )}
-
-          {showDialogDelete && (
-            <ConfirmationDialog 
-              title={"Xác nhận xóa nhân viên"}
-              open={showDialogDelete}
-              onConfirmDialogClose={() => setShowDialogDelete(false)}
-              onYesClick={handleDeleteEmployee}
-              text={"Thao tác này sẽ xóa nhân viên vĩnh viễn"}
-              Yes={"Xóa"}
-              No={"Hủy bỏ"}
+              showDialogProfile={showDialogProfile}
+              handleCloseDialogProfile={handleCloseDialogProfile}
+              listCertificateEmployee={listCertificateEmployee}
+              listFamilyEmployee={listFamilyEmployee}
+              readOnly= {true}
+              getAllEmployee={getAllEmployee}
+              waitHandle={+rowData.submitProfileStatus === STATUS_PENDING_APPROVAL ? true : false }
             />
           )}
         </Grid>
       </Grid>
+      {
+        showDialogEndProfile &&
+        <ModalUpdateHappenings 
+          label={"Đơn xin nghỉ việc"}
+          rowData={rowData}
+          setListDataModal={setListEmployee}
+          setRowData={setRowData}
+          handleCloseModal={handleCloseDialogEndProfile}
+          showModal={showDialogEndProfile}
+        />
+      }
     </div>
   );
 }
 
-export default ReleaseEmployee;
+export default ApprovalEmployee;
